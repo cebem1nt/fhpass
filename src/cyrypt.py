@@ -15,27 +15,26 @@ class Crpt:
         sha256.update(data.encode())
         return sha256.hexdigest()
 
-    def verify_hash(self, new_data, original_data):
-        return self.hash_data(new_data) == original_data  
+    def verify_hash(self, new_data, original_hash):
+        return self.hash_data(new_data) == original_hash
 
-    def encrypt_password(self, password):
+    def encrypt_value(self, value):
         """ 
         Takes pasword and returns encrypted bytes
         """
-
-        return self.cipher.encrypt(password.encode())
+        return self.cipher.encrypt(value.encode())
     
-    def decrypt_password(self, encrypted_password):
+    def decrypt_value(self, encrypted_value):
         """ 
         Takes encrypted password and returns string
         """
-
-        return self.cipher.decrypt(encrypted_password).decode()
+        return self.cipher.decrypt(encrypted_value).decode()
 
 class SaltManager(object):
-    def __init__(self, generate, path='.salt'):
+    def __init__(self, generate):
         self.generate = generate
-        self.path = path
+        self.HOME_DIR = os.path.expanduser('~')
+        self.DIR = os.path.join(self.HOME_DIR, '.password_manager')
 
     def get(self):
         if self.generate:
@@ -44,12 +43,17 @@ class SaltManager(object):
 
     def _generate_and_store(self):
         salt = os.urandom(16)
-        with open(self.path, 'wb') as f:
+
+        if not os.path.exists(self.DIR):
+            os.makedirs(self.DIR)
+
+        with open(os.path.join(self.DIR, '.salt'), 'wb') as f:
             f.write(salt)
+
         return salt
 
     def _read(self):
-        with open(self.path, 'rb') as f:
+        with open(os.path.join(self.DIR, '.salt'), 'rb') as f:
             return f.read()
         
 def derive_key(passphrase, generate_salt=False):

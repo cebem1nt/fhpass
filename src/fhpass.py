@@ -58,8 +58,8 @@ class FHpass:
                 stdscr.addstr(error_y+1, 0, 'press any button to continue')
 
                 self.cr = Crpt(derive_key(bpswd, generate_salt=True))
-
                 self.files.set_pswd(pswd, self.cr)
+
                 self.s_pswds = self.files.get_saved_pswds(self.cr)
 
                 stdscr.getch()
@@ -112,31 +112,31 @@ class FHpass:
 
             draw_pswds_list(stdscr, self.s_pswds, cursor+collison, start, end, self.width, self.height)
 
-            if self.s_pswds and selected != None:
-                current_login, current_password = self.s_pswds[selected]
-                draw_login_pswd_context(stdscr, current_login, current_password, self.width)
+            if self.s_pswds and selected is not None:
+                current_name, current_login, current_password = self.s_pswds[selected]
+                draw_login_pswd_context(stdscr, current_name, current_login, current_password, self.width)
                 
             stdscr.refresh()
         
             key = stdscr.getch()
 
-            if key == ord('q'):
+            if key == ord('Q'):
                 break
 
-            elif key == ord('r'):
+            elif key == ord('R'):
                 k = stdscr.getch()
                 if k == curses.KEY_ENTER or k == 10:
                     self.files.reboot()
                     break
 
-            elif key == ord('a'):
-                self.add_pswd_login(stdscr)
+            elif key == ord('A'):
+                self.add_name_pswd_login(stdscr)
                 start = 0
                 cursor = 0
                 collison = 0
                 end = self.height - 7
 
-            elif key == ord('c'):
+            elif key == ord('C'):
                 selected = cursor
 
             elif key == ord('w'):
@@ -157,33 +157,39 @@ class FHpass:
                     end += 1
                     collison -= 1
 
-            elif key == ord('d') and current_login:
-                self.files.delete_saved_pas(current_login)
-                clear_section(stdscr, 3, 8, (self.width // 3)+4, self.width-5)
+            elif key == ord('D') and current_login:
+                self.files.delete_saved_pas(cursor+collison)
+                clear_section(stdscr, 3, 10, (self.width//3)+4, self.width-5)
 
                 start = 0
                 cursor = 0
                 collison = 0
                 end = self.height - 7
-
                 selected = None
 
-    def add_pswd_login(self, stdscr):
-        x = (self.width // 3) + 5
-        y = self.height-10
-        inp_pos = x + 12
+                current_name, current_login, current_password = (None, None, None)
 
-        max_input_length = (self.width - inp_pos)-3
+    def add_name_pswd_login(self, stdscr):
+        x = (self.width // 3) + 4
+        y = self.height-9
+        inp_pos = x + 13
 
-        stdscr.addstr(y, x, 'Add login and password' )
-        stdscr.addstr(y+1, x, '[login]: ' )
-        login = inp_handling(stdscr, y+1, inp_pos, max_input_length, invisible=False)
+        max_input_length = (self.width - inp_pos)-4
+        div_length = max_input_length+13
 
-        stdscr.addstr(y+2, x, '[password]: ' )
-        password = inp_handling(stdscr, y+2 , inp_pos, max_input_length, invisible=False)
+        stdscr.addstr(y, x, '~'*div_length, curses.color_pair(4))
+        stdscr.addstr(y+1, x, 'Add name, login and password', curses.color_pair(6))
+        stdscr.addstr(y+2, x, '[name tag]: ', curses.color_pair(7))
+        name = inp_handling(stdscr, y+2, inp_pos, max_input_length, invisible=False)
 
-        self.files.set_saved_pswds(login, password, self.cr)            
-        clear_section(stdscr, y, y+3, x, inp_pos+30)
+        stdscr.addstr(y+3, x, '[login]: ', curses.color_pair(7))
+        login = inp_handling(stdscr, y+3, inp_pos, max_input_length, invisible=False)
+
+        stdscr.addstr(y+4, x, '[password]: ', curses.color_pair(7))
+        password = inp_handling(stdscr, y+4 , inp_pos, max_input_length, invisible=False)
+
+        self.files.set_saved_pswds(name, login, password, self.cr)            
+        clear_section(stdscr, y, y+5, x, inp_pos+max_input_length)
 
 def clear_line(stdscr, y, x, length=1):
     stdscr.addstr(y, x, ' '*length)
@@ -192,7 +198,7 @@ def clear_section(stdscr, y_start, y_end, section_start, section_end):
     for i in range(y_start, y_end):
         clear_line(stdscr, i, section_start, section_end)
 
-def draw_login_pswd_context(stdscr, login, pswd, width):
+def draw_login_pswd_context(stdscr, name, login, pswd, width):
     max_x = width-2
     y = 3
     x = (width // 3) + 4
@@ -202,18 +208,19 @@ def draw_login_pswd_context(stdscr, login, pswd, width):
 
     clear_section(stdscr, y-1, y+5, x, s_width)
 
-    stdscr.addstr(y, x, f'login: {login}', curses.color_pair(3))
-    stdscr.addstr(y+1, x, '#='*div_length, curses.color_pair(1))
+    stdscr.addstr(y, x, f'Name: {name}', curses.color_pair(4))
+    stdscr.addstr(y+1, x, f'Login: {login}', curses.color_pair(3))
+    stdscr.addstr(y+2, x, '#='*div_length, curses.color_pair(4))
 
-    stdscr.addstr(y+2, x, f'password: {pswd}', curses.color_pair(1))
-    stdscr.addstr(y+4, x, '__ delete', curses.color_pair(3))
-    stdscr.addstr(y+4, x, 'd:', curses.color_pair(5))
+    stdscr.addstr(y+3, x, f'Password: {pswd}', curses.color_pair(1))
+    stdscr.addstr(y+5, x, '__ delete', curses.color_pair(3))
+    stdscr.addstr(y+5, x, 'D:', curses.color_pair(5))
 
     
 
 def draw_pswds_list(stdscr, pswds, cur_pos, start, end, w_width, w_height):
     max_x = w_width // 3
-    max_y = w_height - 4
+    max_y = w_height - 3
     max_inp_length = max_x // 2
     
     y = 3
@@ -223,11 +230,11 @@ def draw_pswds_list(stdscr, pswds, cur_pos, start, end, w_width, w_height):
 
     if pswds:
         for i, pswd in enumerate(pswds[start:end]): 
-            login = pswd[0]
-            whtspc = ' '*(max_inp_length-len(login))
-            corrected_login = check_length(login, max_length=max_inp_length)
+            name = pswd[0]
+            whtspc = ' '*(max_inp_length-len(name))
+            corrected_name = check_length(name, max_length=max_inp_length)
 
-            password_string = f'{corrected_login} {whtspc}: '
+            password_string = f'{corrected_name}{whtspc}: '
 
             clear_line(stdscr, y, x, max_x-2)
 
@@ -253,12 +260,14 @@ def draw_pswds_list(stdscr, pswds, cur_pos, start, end, w_width, w_height):
             clear_line(stdscr, y, x, max_x-2)
 
     else:
-        clear_line(stdscr, y, max_x, 1)
+        clear_line(stdscr, 2, x, max_x-2)
         stdscr.addstr(y+1, x, "#/#/#/#/#/#/#/#/#/#/#/#/#/#   ",  curses.color_pair(4))
         stdscr.addstr(y+2, x, "                              ",)
         stdscr.addstr(y+3, x, "You dont have any passwords   ",  curses.color_pair(3))
         stdscr.addstr(y+4, x, "Press [a] to add a password   ", curses.color_pair(3))
         stdscr.addstr(y+5, x, "                              ",)
+
+
 
 def draw_interface(stdscr, width, height):
     for x in range(width):
@@ -276,7 +285,7 @@ def draw_interface(stdscr, width, height):
     y = height-1
     x = 0
     controls_text = "__ quit; __ reboot; __ choose; __ scroll up; __ scroll down; __ add password;"
-    control_chars = ['q:', 'r:', 'c:', 'w:', 's:', 'a:']
+    control_chars = ['Q:', 'R:', 'C:', 'w:', 's:', 'A:']
 
     for char in controls_text.split(' '):
         if char == '__':
@@ -294,7 +303,7 @@ def inp_handling(stdscr, y, x, max_inp_length=20, invisible=True):
         while True:
             key = stdscr.getch()
 
-            if key != ord(' ') and key != 9:
+            if key != 9:
                 if (key == curses.KEY_ENTER or key == 10) and len(output) > 0:
                     if invisible:
                         for i in range(output_x, x-1, -1):
