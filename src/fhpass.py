@@ -23,23 +23,22 @@ class FHpass:
         stdscr.refresh()
 
     def registrate(self, stdscr):
-        stdscr.addstr(1, 0, "  ______  _                                                                                    ", curses.color_pair(6))
-        stdscr.addstr(2, 0, " |  ____|| |                                                                                   ", curses.color_pair(6)) 
-        stdscr.addstr(3, 0, " | |__   | |__   _ __    __ _  ___   ___    _ __ ___    __ _  _ __    __ _   __ _   ___  _ __  ", curses.color_pair(6))                      
-        stdscr.addstr(4, 0, " |  __|  | '_ \ | '_ \  / _` |/ __| / __|  | '_ ` _ \  / _` || '_ \  / _` | / _` | / _ \| '__| ", curses.color_pair(6))  
-        stdscr.addstr(5, 0, " | |     | | | || |_) || (_| |\__ \ \__ \  | | | | | || (_| || | | || (_| || (_| ||  __/| |    ", curses.color_pair(6))  
-        stdscr.addstr(6, 0, " |_|     |_| |_|| .__/  \__,_||___/ |___/  |_| |_| |_| \__,_||_| |_| \__,_| \__, | \___||_|    ", curses.color_pair(6))  
-        stdscr.addstr(7, 0, "                | |                                                        __/  /              ", curses.color_pair(6))  
-        stdscr.addstr(8, 0, "                |_|                                                       |____/               ", curses.color_pair(6))  
+        stdscr.addstr(1, 0, "  ______  _                               ", curses.color_pair(6))
+        stdscr.addstr(2, 0, " |  ____|| |                              ", curses.color_pair(6)) 
+        stdscr.addstr(3, 0, " | |__   | |__   _ __    __ _  ___   ___  ", curses.color_pair(6))                      
+        stdscr.addstr(4, 0, " |  __|  | '_ \\ | '_ \\  / _` |/ __| / __| ", curses.color_pair(6))  
+        stdscr.addstr(5, 0, " | |     | | | || |_) || (_| |\\__ \\ \\__ \\ ", curses.color_pair(6))  
+        stdscr.addstr(6, 0, " |_|     |_| |_|| .__/  \\__,_||___/ |___/ ", curses.color_pair(6))  
+        stdscr.addstr(7, 0, "                | |                       ", curses.color_pair(6))  
+        stdscr.addstr(8, 0, "                |_|                       ", curses.color_pair(6))  
 
 
-        stdscr.addstr(10,0, '[info]: Welcome to the fhpass manager. this is a linux/macos password manager', curses.color_pair(1) | curses.A_BOLD)
-        stdscr.addstr(11,0, '[info]: Which stores on your local machine, pre-encrypted passwords',           curses.color_pair(1) | curses.A_BOLD)
-        stdscr.addstr(12,0, '[info]: It uses your login password to encrypt and decrypt your data.',         curses.color_pair(1) | curses.A_BOLD)
-        stdscr.addstr(13,0, '[warning]: if you forget your login password, you will not get acces.',         curses.color_pair(2) | curses.A_BOLD)
-        stdscr.addstr(14,0, '[info]: first login, welcome. lets create your password',                       curses.color_pair(1) | curses.A_BOLD)
+        stdscr.addstr(10,0, '[info]: Welcome to the fhpass, a linux/macos password manager',         curses.color_pair(1) | curses.A_BOLD)
+        stdscr.addstr(11,0, '[info]: Store passwords on your local machine',   curses.color_pair(1) | curses.A_BOLD)
+        stdscr.addstr(12,0, '[warning]: if you forget your login password, you will not get acces.', curses.color_pair(2) | curses.A_BOLD)
+        stdscr.addstr(13,0, '[info]: first login, welcome. lets create your password',               curses.color_pair(1) | curses.A_BOLD)
 
-        pswds_y = 16
+        pswds_y = 15
         error_y = pswds_y + 1
 
         while True:
@@ -120,26 +119,26 @@ class FHpass:
         
             key = stdscr.getch()
 
-            if key == ord('Q'):
+            if key == 265: #F1
                 break
 
-            elif key == ord('R'):
+            elif key == 268: #F4
                 k = stdscr.getch()
                 if k == curses.KEY_ENTER or k == 10:
                     self.files.reboot()
                     break
 
-            elif key == ord('A'):
+            elif key == 266: #F2
                 self.add_name_pswd_login(stdscr)
                 start = 0
                 cursor = 0
                 collison = 0
                 end = self.height - 7
 
-            elif key == ord('C'):
+            elif key == 10: # ENTER
                 selected = cursor
 
-            elif key == ord('w'):
+            elif key == 259 or key == ord('k'): #arrow up
                 if cursor > start:
                     cursor -= 1
 
@@ -148,7 +147,7 @@ class FHpass:
                     start -= 1
                     end -= 1
 
-            elif key == ord('s'):
+            elif key == 258 or key == ord('j'): #arrow down
                 if cursor < len(self.s_pswds)-1:
                     cursor += 1
                 
@@ -157,7 +156,7 @@ class FHpass:
                     end += 1
                     collison -= 1
 
-            elif key == ord('D') and current_login:
+            elif key == 267 and current_login: # F3
                 self.files.delete_saved_pas(cursor+collison)
                 clear_section(stdscr, 3, 10, (self.width//3)+4, self.width-5)
 
@@ -284,8 +283,8 @@ def draw_interface(stdscr, width, height):
 
     y = height-1
     x = 0
-    controls_text = "__ quit; __ reboot; __ choose; __ scroll up; __ scroll down; __ add password;"
-    control_chars = ['Q:', 'R:', 'C:', 'w:', 's:', 'A:']
+    controls_text = "F1 quit; F4 reboot; ENTER choose; F2 add password; Up/Down navigation"
+
 
     for char in controls_text.split(' '):
         if char == '__':
@@ -346,7 +345,6 @@ def main(stdscr):
     curses.curs_set(0)
     curses.start_color()
     curses.use_default_colors()
-    curses.init_pair(0, -1, -1)
     curses.init_pair(1, curses.COLOR_GREEN, -1)
     curses.init_pair(2, curses.COLOR_RED, -1)
     curses.init_pair(3, curses.COLOR_BLUE, -1)
