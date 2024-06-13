@@ -213,7 +213,7 @@ def draw_login_pswd_context(stdscr, name, login, pswd, width):
 
     stdscr.addstr(y+3, x, f'Password: {pswd}', curses.color_pair(1))
     stdscr.addstr(y+5, x, '__ delete', curses.color_pair(3))
-    stdscr.addstr(y+5, x, 'D:', curses.color_pair(5))
+    stdscr.addstr(y+5, x, 'F3', curses.color_pair(5))
 
     
 
@@ -283,17 +283,16 @@ def draw_interface(stdscr, width, height):
 
     y = height-1
     x = 0
-    controls_text = "F1 quit; F4 reboot; ENTER choose; F2 add password; Up/Down navigation"
+    controls_text = "__ quit; __ add password; __ reset; _______ navigation; _____ select;"
+    controls_chars = ["F1", "F2", "F4", "UP/DOWN", "ENTER"]
 
-
-    for char in controls_text.split(' '):
-        if char == '__':
-            control = control_chars.pop(0)
-            stdscr.addstr(y, x, control, curses.color_pair(5))
-            x += 3
+    for part in controls_text.split(" "):
+        if part.startswith("_"):
+            char = controls_chars.pop(0)
+            stdscr.addstr(y, x, char, curses.color_pair(5))
         else:
-            stdscr.addstr(y, x, char, curses.color_pair(3))
-            x += len(char)+1
+            stdscr.addstr(y, x, part, curses.color_pair(3))
+        x += len(part)+1
 
 def inp_handling(stdscr, y, x, max_inp_length=20, invisible=True):
         output = ''
@@ -349,7 +348,7 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_RED, -1)
     curses.init_pair(3, curses.COLOR_BLUE, -1)
     curses.init_pair(4, curses.COLOR_MAGENTA, -1)
-    curses.init_pair(5, -1, curses.COLOR_MAGENTA)
+    curses.init_pair(5, -1, curses.COLOR_BLACK)
     curses.init_pair(6, curses.COLOR_CYAN, -1)
     curses.init_pair(7, curses.COLOR_YELLOW, -1)
 
